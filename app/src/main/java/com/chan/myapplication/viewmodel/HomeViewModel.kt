@@ -1,40 +1,42 @@
 package com.chan.myapplication.viewmodel
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import com.chan.myapplication.R
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.chan.myapplication.modeldata.DataSiswa
+import com.chan.myapplication.repositori.RepositoryDataSiswa
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SiswaTopAppBar(
-    title: String,
-    canNavigateBack: Boolean,
-    modifier: Modifier = Modifier,
-    scrollBehavior: TopAppBarScrollBehavior? = null,
-    navigateUp: () -> Unit = {}
-){
-    CenterAlignedTopAppBar(
-        title = { Text(title) },
-        modifier = modifier,
-        scrollBehavior = scrollBehavior,
-        navigationIcon = {
-            if (canNavigateBack) {
-                IconButton(onClick = navigateUp) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.back)
-                    )
-                }
+sealed interface StatusUiSiswa {
+    data class Success(val siswa: List<DataSiswa> = listOf()) : StatusUiSiswa
+    object Error : StatusUiSiswa
+    object Loading : StatusUiSiswa
+}
+
+class HomeViewModel(private val repositoryDataSiswa: RepositoryDataSiswa) : ViewModel() {
+    var listSiswa: StatusUiSiswa by mutableStateOf(StatusUiSiswa.Loading)
+        private set
+
+    init {
+        loadSiswa()
+    }
+
+    fun loadSiswa() {
+        viewModelScope.launch {
+            listSiswa = StatusUiSiswa.Loading
+            listSiswa = try {
+                StatusUiSiswa.Success(repositoryDataSiswa.getDataSiswa())
+            } catch (e: IOException) {
+                StatusUiSiswa.Error
+            } catch (e: HttpException) {
+                StatusUiSiswa.Error
+            } catch (e: Exception) {
+                StatusUiSiswa.Error
             }
         }
-    )
+    }
 }
