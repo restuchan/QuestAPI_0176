@@ -1,4 +1,8 @@
 package com.chan.myapplication.uicontroller.route
 
-object DestinasiHome {
+import com.chan.myapplication.R
+
+object DestinasiHome : DestinasiNavigasi {
+    override val route = "home"
+    override val titleRes = R.string.app_name
 }
