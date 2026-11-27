@@ -1,4 +1,6 @@
 package com.chan.myapplication.uicontroller.route
 
-object DestinasiNavigasi {
+interface DestinasiNavigasi {
+    val route: String
+    val titleRes: Int
 }
